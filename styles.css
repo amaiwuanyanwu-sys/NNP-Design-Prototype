@@ -421,9 +421,8 @@
   .day-header:last-child { border-right: none; }
   .day-header .day { font-size: 14px; font-weight: 600; color: var(--n800); line-height: 1.4; }
   .day-header .kcal { font-size: 12px; font-weight: 500; color: var(--n600); line-height: 1.5; }
-  .day-header .progress { height: 8px; border-radius: 4px; background: var(--n200); width: 100%; overflow: hidden; display: flex; gap: 1px; }
+  .day-header .progress { height: 4px; border-radius: 4px; background: var(--n200); width: 100%; overflow: hidden; display: flex; gap: 1px; }
   .day-header .progress span { height: 100%; }
-  .day-header .progress .rest { background: var(--n300); flex: 1; min-width: 0; }
   .row-header { width: 120px; flex-shrink: 0; background: var(--n200); border-bottom: 1px solid var(--n400); display: flex; align-items: center; padding: 0 8px; position: sticky; left: 0; z-index: 1; }
   .row-header .meal-label { height: 32px; display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 4px; font-size: 14px; font-weight: 600; color: var(--n700); line-height: 1.4; }
   .row-header .meal-label svg { width: 20px; height: 20px; flex-shrink: 0; }
@@ -979,9 +978,10 @@
   .metric-marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--n700); border-radius: 1px; }
   .metric-desc { font-size: 12px; font-weight: 500; color: var(--n600); display: flex; align-items: center; gap: 4px; }
   .metric-desc.warning { color: var(--warning900); }
-  /* the day header becomes the way in */
+  /* the day header becomes the way in — on hover the title takes the Action colour
+     rather than the whole cell shading, as in the design */
   .day-header.clickable { cursor: pointer; }
-  .day-header.clickable:hover { background: var(--n200); }
+  .day-header.clickable:hover .day { color: var(--action); }
   .day-header.active { background: var(--action100); box-shadow: inset 0 0 0 1px var(--action); }
 
   /* ===== Tooltip ===== */

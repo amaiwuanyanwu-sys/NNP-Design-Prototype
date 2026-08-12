@@ -1650,24 +1650,17 @@
     dayEls[day].kcal.textContent = total.toLocaleString('en-US') + ' kcal';
 
     var macroKcal = kc.carbs + kc.fat + kc.protein;
-    var target = savedPrefs.targetOn ? savedPrefs.calories : (state.calories || 0);
-    var denom = target || macroKcal;
-    var scale = (target && macroKcal > target) ? target / macroKcal : 1;
 
     var bar = dayEls[day].bar;
     bar.innerHTML = '';
     if (!macroKcal) return;                 /* empty day leaves the track bare */
+    /* The bar is the macro split, matching the summary card's donut — the three
+       segments are shares of each other and always fill the width. */
     [['carbs', 'var(--lake600)'], ['fat', 'var(--creamsicle200)'], ['protein', 'var(--spring400)']].forEach(function (seg) {
       var el = document.createElement('span');
-      el.style.cssText = 'background:' + seg[1] + '; width:' + ((kc[seg[0]] * scale / denom) * 100) + '%;';
+      el.style.cssText = 'background:' + seg[1] + '; width:' + ((kc[seg[0]] / macroKcal) * 100) + '%;';
       bar.appendChild(el);
     });
-    /* the shortfall is drawn as its own segment, as in the component */
-    if (target && macroKcal < target) {
-      var rest = document.createElement('span');
-      rest.className = 'rest';
-      bar.appendChild(rest);
-    }
   }
 
   function onCellClick(day, row) {
