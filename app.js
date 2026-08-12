@@ -1181,7 +1181,6 @@
 
     var groups = [];
     var ingRows = [];
-    var ingNote = null;
 
     if (!q) {
       /* Default: empty state prompting search */
@@ -1225,9 +1224,6 @@
       ingMatch.slice(0, ING_SHORT_CAP).forEach(function (m) {
         ingRows.push({ key: 'I:' + EXCL_ING[m.idx], title: hi(EXCL_ING[m.idx], q) });
       });
-      if (ingMatch.length > ING_SHORT_CAP) {
-        ingNote = 'Showing ' + ING_SHORT_CAP + ' of ' + ingMatch.length + ' matches. Keep typing to narrow down';
-      }
     }
 
     if (groups.length) {
@@ -1246,12 +1242,6 @@
         var covers = coveringGroups(r.key.slice(2));
         body.appendChild(cbxRow(r.key, r.title, null, covers.length ? covers.join(', ') : null));
       });
-    }
-    if (ingNote) {
-      var note = document.createElement('div');
-      note.style.cssText = 'padding:12px 8px; font-size:12px; font-weight:500; color:var(--n600);';
-      note.textContent = ingNote;
-      body.appendChild(note);
     }
     if (!groups.length && !ingRows.length) {
       var empty = document.createElement('div');
