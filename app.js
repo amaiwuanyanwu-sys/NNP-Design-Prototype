@@ -259,6 +259,7 @@
     savedPrefs = {
       targetOn: targetToggle.classList.contains('on'),
       calories: state.calories,
+      grams: { carbs: state.grams.carbs, fat: state.grams.fat, protein: state.grams.protein },
       dietary: selectedChipLabels('dietaryChips'),
       exclusions: setToArray(exclSelected),
       cultural: selectedChipLabels('culturalChips')
@@ -369,7 +370,7 @@
       cell.className = 'day-header clickable';
       cell.setAttribute('role', 'button');
       cell.setAttribute('tabindex', '0');
-      cell.setAttribute('aria-label', day + ' nutrition summary');
+      cell.setAttribute('aria-label', day + ' nutrition details');
       cell.innerHTML =
         '<span class="day">' + day + '</span>' +
         '<span class="kcal">0 kcal</span>' +
@@ -685,7 +686,7 @@
   }
 
   /* The header shows saved preferences only, never the panel's unsaved edits */
-  var savedPrefs = { targetOn: false, calories: 0, dietary: [], exclusions: [], cultural: [] };
+  var savedPrefs = { targetOn: false, calories: 0, grams: { carbs: 0, fat: 0, protein: 0 }, dietary: [], exclusions: [], cultural: [] };
 
   /* ===== Client-level default preferences =====
      Set once from "Set as client's defaults", then applied to every new plan. */
@@ -972,6 +973,7 @@
     savedPrefs = {
       targetOn: targetToggle.classList.contains('on'),
       calories: state.calories,
+      grams: { carbs: state.grams.carbs, fat: state.grams.fat, protein: state.grams.protein },
       dietary: selectedChipLabels('dietaryChips'),
       exclusions: setToArray(exclSelected),
       cultural: selectedChipLabels('culturalChips')
@@ -1492,9 +1494,14 @@
   function itemsFor() { return cellItems[cellKey(railCtx.day, railCtx.row)] || []; }
   function findDish(items, dish) { return items.filter(function (it) { return it.dish === dish; })[0] || null; }
 
+  /* A meal cell and a day header are two ways into the same right rail, so only
+     one of them may read as selected at a time. */
   function setSelectedCell(day, row) {
     Object.keys(cellEls).forEach(function (k) { cellEls[k].classList.remove('selected'); });
-    if (day !== null) cellEls[cellKey(day, row)].classList.add('selected');
+    if (day !== null) {
+      cellEls[cellKey(day, row)].classList.add('selected');
+      clearActiveDay();
+    }
   }
 
   function renderCell(day, row) {
@@ -2577,10 +2584,19 @@
     return { totals: t, meals: meals };
   }
 
-  function markActiveDay(day) {
+  function clearActiveDay() {
     DAYS.forEach(function (d2) {
-      if (dayEls[d2] && dayEls[d2].el) dayEls[d2].el.classList.toggle('active', d2 === day && !nutriRail.classList.contains('hidden-panel'));
+      if (dayEls[d2] && dayEls[d2].el) dayEls[d2].el.classList.remove('active');
     });
+  }
+
+  function markActiveDay(day) {
+    var on = !nutriRail.classList.contains('hidden-panel');
+    DAYS.forEach(function (d2) {
+      if (dayEls[d2] && dayEls[d2].el) dayEls[d2].el.classList.toggle('active', d2 === day && on);
+    });
+    /* selecting a day supersedes whatever meal cell was selected */
+    if (on) Object.keys(cellEls).forEach(function (k) { cellEls[k].classList.remove('selected'); });
   }
 
   function renderNutriRail() {
@@ -2590,38 +2606,80 @@
     document.getElementById('nsDayNext').classList.toggle('disabled', idx === DAYS.length - 1);
 
     var res = dayTotals(nsDay), t = res.totals;
-    document.getElementById('nsDesc').textContent = res.meals
-      ? res.meals + (res.meals === 1 ? ' meal planned' : ' meals planned')
-      : 'Nothing planned yet';
 
     var kc = { carbs: t.carbs * 4, fat: t.fat * 9, protein: t.protein * 4 };
     var macroKcal = kc.carbs + kc.fat + kc.protein;
     var share = function (k) { return macroKcal ? Math.round((kc[k] / macroKcal) * 100) : 0; };
-
-    /* A segmented progress bar: the track is the day's calorie target and the fill is
-       split by macro, so the unfilled remainder is what's still available. Without a
-       target there's nothing to progress against, so it reads as a plain split. */
-    var target = savedPrefs.targetOn ? savedPrefs.calories : 0;
-    var denom = target || macroKcal;
-    var scale = 1;
-    if (target && macroKcal > target) scale = target / macroKcal;   /* cap at full */
-
-    var bar = document.getElementById('nsBar');
-    bar.innerHTML = '';
-    if (macroKcal) {
-      [['carbs', 'var(--lake600)'], ['fat', 'var(--creamsicle200)'], ['protein', 'var(--spring400)']].forEach(function (seg) {
-        var el = document.createElement('span');
-        el.style.cssText = 'background:' + seg[1] + '; width:' + ((kc[seg[0]] * scale / denom) * 100) + '%;';
-        bar.appendChild(el);
-      });
-    }
-
     var fmtN = function (v) { return Math.round(v).toLocaleString('en-US'); };
+    var hasTarget = savedPrefs.targetOn;
+
+    /* Macro split donut: conic slices, one per macro's share of the day's macro
+       calories, running clockwise from 12 o'clock as Fat → Protein → Carbs.
+       Hairline white gaps separate the slices, as in the design. */
+    var pctCarbs = share('carbs'), pctFat = share('fat'), pctProtein = share('protein');
+    var donut = document.getElementById('msDonut');
+    if (macroKcal) {
+      var stops = [], at = 0;
+      [[pctFat, 'var(--creamsicle200)'], [pctProtein, 'var(--spring400)'], [pctCarbs, 'var(--lake600)']]
+        .forEach(function (seg) {
+          if (!seg[0]) return;
+          stops.push(seg[1] + ' ' + at + '% ' + (at + seg[0]) + '%');
+          at += seg[0];
+        });
+      donut.style.background = 'conic-gradient(' + stops.join(', ') + ')';
+    } else {
+      donut.style.background = 'var(--n200)';
+    }
+    document.getElementById('msLegend').innerHTML = [
+      ['Carbs', pctCarbs, 'var(--lake600)'],
+      ['Fat', pctFat, 'var(--creamsicle200)'],
+      ['Protein', pctProtein, 'var(--spring400)']
+    ].map(function (row) {
+      return '<div class="ms-leg-row"><span class="ms-swatch" style="color:' + row[2] + ';">' + ico('pie-chart', 16) + '</span>' +
+        '<span class="ms-label">' + row[0] + '</span><span class="ms-pct">' + row[1] + '%</span></div>';
+    }).join('');
+
+    /* Metric widgets: Calories / Carbs / Fat / Protein, each against its own target
+       when one is set. Over-target reads as a warning; hitting it exactly reads as success. */
+    var metrics = [
+      { key: 'kcal', label: 'Calories', value: t.kcal, target: savedPrefs.calories, unit: 'kcal', color: 'var(--n600)' },
+      { key: 'carbs', label: 'Carbs', value: t.carbs, target: savedPrefs.grams.carbs, unit: 'g', color: 'var(--lake600)' },
+      { key: 'fat', label: 'Fat', value: t.fat, target: savedPrefs.grams.fat, unit: 'g', color: 'var(--creamsicle200)' },
+      { key: 'protein', label: 'Protein', value: t.protein, target: savedPrefs.grams.protein, unit: 'g', color: 'var(--spring400)' }
+    ];
+    document.getElementById('metricGrid').innerHTML = metrics.map(function (m) {
+      var value = fmtN(m.value);
+      if (!hasTarget) {
+        return '<div class="metric-card">' +
+          '<div class="metric-head"><span class="metric-name">' + m.label + '</span></div>' +
+          '<div class="metric-value-row"><span class="metric-value">' + value + '</span><span class="metric-unit">' + m.unit + '</span></div>' +
+          '</div>';
+      }
+      var pct = m.target ? m.value / m.target : 0;
+      var over = pct > 1;
+      var met = pct >= 1;
+      var fillPct = Math.min(pct, 1) * 100;
+      var tag = met
+        ? '<span class="metric-tag ' + (over ? 'warning' : 'success') + '">' + ico(over ? 'danger-warning' : 'done', 14) + '</span>'
+        : '';
+      var desc = over ? 'Over target' : (met ? 'Target met' : Math.round(pct * 100) + '%');
+      return '<div class="metric-card">' +
+        '<div class="metric-head"><span class="metric-name">' + m.label + '</span>' + tag + '</div>' +
+        '<div class="metric-value-row">' +
+          '<span class="metric-value' + (over ? ' warning' : '') + '">' + value + '</span>' +
+          '<span class="metric-sep">/</span>' +
+          '<span class="metric-target">' + fmtN(m.target) + '</span>' +
+          '<span class="metric-unit">' + m.unit + '</span>' +
+        '</div>' +
+        '<div class="metric-bar-wrap">' +
+          '<div class="metric-bar-fill" style="width:' + fillPct + '%; background:' + m.color + ';"></div>' +
+          (met ? '<div class="metric-marker" style="left:' + fillPct + '%;"></div>' : '') +
+        '</div>' +
+        '<div class="metric-desc' + (over ? ' warning' : '') + '">' + desc + '</div>' +
+        '</div>';
+    }).join('');
+
     var rows = [
-      { label: 'Calories', text: fmtN(t.kcal) + ' kcal' },
-      { label: 'Carbs', text: share('carbs') + '% · ' + fmtN(t.carbs) + ' g', chip: 'lake' },
-      { label: 'Fat', text: share('fat') + '% · ' + fmtN(t.fat) + ' g', chip: 'creamsicle' },
-      { label: 'Protein', text: share('protein') + '% · ' + fmtN(t.protein) + ' g', chip: 'spring' },
       { label: 'Fiber', text: fmtN(t.fiber) + ' g' },
       { label: 'Sugar', text: fmtN(t.sugar) + ' g' },
       { label: 'Cholesterol', text: fmtN(t.cholesterol) + ' mg' },
@@ -2651,7 +2709,7 @@
 
   document.getElementById('nutriCloseBtn').addEventListener('click', function () {
     popPanel(nutriRail);
-    DAYS.forEach(function (d2) { if (dayEls[d2] && dayEls[d2].el) dayEls[d2].el.classList.remove('active'); });
+    clearActiveDay();
   });
   document.getElementById('nsDayPrev').addEventListener('click', function () {
     var i = DAYS.indexOf(nsDay); if (i > 0) { nsDay = DAYS[i - 1]; renderNutriRail(); }

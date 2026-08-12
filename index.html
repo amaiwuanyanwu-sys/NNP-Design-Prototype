@@ -439,8 +439,8 @@
 
     <div class="panel hidden-panel" id="nutriRail">
       <div class="panel-header">
-        <h2>Nutrition summary</h2>
-        <button class="icon-btn" id="nutriCloseBtn" aria-label="Close nutrition summary">
+        <h2>Nutrition details</h2>
+        <button class="icon-btn" id="nutriCloseBtn" aria-label="Close nutrition details">
           <span data-ico="close" data-ico-size="24"></span>
         </button>
       </div>
@@ -454,16 +454,25 @@
             <span data-ico="keyboard-arrow-right" data-ico-size="24"></span>
           </button>
         </div>
+
+        <div class="ms-card">
+          <span class="ms-title">Summary</span>
+          <div class="ms-row">
+            <div class="ms-donut" id="msDonut"></div>
+            <div class="ms-legend" id="msLegend"></div>
+          </div>
+        </div>
+
+        <div class="metric-grid" id="metricGrid"></div>
+
         <div class="ns-card" id="nsCard">
           <button class="ns-head" id="nsToggle" aria-expanded="true">
             <span class="ns-titles">
-              <span class="ns-title">Nutrition</span>
-              <span class="ns-desc" id="nsDesc"></span>
+              <span class="ns-title">More nutrients</span>
             </span>
             <svg class="ns-chev" viewBox="0 0 24 24" width="20" height="20" fill="none" data-ico-lib="keyboard-arrow-up"></svg>
           </button>
           <div class="ns-content">
-            <div class="ns-bar-wrap"><div class="ns-bar" id="nsBar"></div></div>
             <div class="ns-rows" id="nsRows"></div>
           </div>
         </div>
