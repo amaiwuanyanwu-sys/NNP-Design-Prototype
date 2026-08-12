@@ -379,12 +379,13 @@
   .empty-content .empty-text .headline { display: block; font-weight: 600; color: var(--n800); }
 
   /* ---- Planner view ---- */
-  .planner-view { flex: 1; min-height: 0; display: flex; }
+  /* The scroll lives on the full-width view, not on the centered column — otherwise
+     the scrollbar tracks the 1360px box and floats inward on wide screens. */
+  .planner-view { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; }
   .planner-main {
-    flex: 1; min-width: 0;
+    width: 100%; min-width: 0;
     max-width: 1360px; margin: 0 auto;   /* centered, padding inside the 1360 */
     display: flex; flex-direction: column; padding: 24px; gap: 16px;
-    overflow-y: auto; overflow-x: hidden;
   }
   .planner-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-shrink: 0; }
   .planner-header .left { display: flex; align-items: center; gap: 8px; min-width: 0; }
