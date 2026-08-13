@@ -2656,6 +2656,9 @@
       var diff = m.value - m.target;
       var onTarget = Math.abs(diff) < 0.5;
       var over = !onTarget && diff > 0;
+      /* Nothing planned yet: "0 / target" already says it, so the gap
+         underneath would only restate the target. */
+      var blank = !m.value;
       var desc, descIcon;
       if (onTarget) {
         desc = 'On target';
@@ -2687,7 +2690,7 @@
           '<span class="metric-unit">' + m.unit + '</span>' +
         '</div>' +
         '<div class="metric-bar-wrap">' + bar + '</div>' +
-        '<div class="metric-desc">' + ico(descIcon, 16) + '<span>' + desc + '</span></div>' +
+        (blank ? '' : '<div class="metric-desc">' + ico(descIcon, 16) + '<span>' + desc + '</span></div>') +
         '</div>';
     }).join('');
 
