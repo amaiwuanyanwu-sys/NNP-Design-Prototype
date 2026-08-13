@@ -9,6 +9,7 @@
     --shadow-hover: 0 4px 18px rgba(1,39,46,0.15);
     --error: #C64838; --error900: #623532;
     --lake200: #82D5F1; --lake600: #219EC4; --creamsicle200: #FFA081; --spring400: #5FE089; --spring200: #95E9AD;
+    --creamsicle400: #F85F2B;
     --warning100: #FFFBEF; --warning900: #A36624;
     --white: #ffffff;
   }
@@ -927,20 +928,11 @@
   /* tinted body so the white cards inside read as cards, per the design */
   .ns-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; background: var(--n100); }
   .ns-card { background: var(--white); border: 1px solid var(--n300); border-radius: 8px; overflow: hidden; }
-  .ns-head { width: 100%; background: var(--white); border: none; display: flex; align-items: center; gap: 16px; padding: 8px 12px; text-align: left; }
-  .ns-head:hover { background: var(--n100); }
-  .ns-head .ns-titles { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  /* a plain heading with a rule under it — the list is always open */
+  .ns-head { width: 100%; background: var(--white); border: none; border-bottom: 1px solid var(--n300); display: flex; align-items: center; min-height: 56px; padding: 8px 16px; text-align: left; }
   .ns-head .ns-title { font-size: 14px; font-weight: 600; color: var(--n800); line-height: 1.4; }
-  .ns-head .ns-desc { font-size: 12px; font-weight: 500; color: var(--n600); line-height: 1.5; }
-  .ns-head .ns-chev { width: 20px; height: 20px; color: var(--n700); flex-shrink: 0; transition: transform .15s; }
-  .ns-card.collapsed .ns-chev { transform: rotate(-180deg); }
-  .ns-content { padding: 0 8px 12px; }
-  .ns-card.collapsed .ns-content { padding: 0 12px 12px; }
-  .ns-bar-wrap { padding: 8px 4px; }
-  .ns-card.collapsed .ns-bar-wrap { padding: 8px 0; }
-  .ns-bar { height: 8px; border-radius: 4px; background: var(--n200); display: flex; gap: 1px; overflow: hidden; }
-  .ns-card.collapsed .ns-rows { display: none; }
-  .ns-rows { display: flex; flex-direction: column; gap: 4px; }
+  .ns-content { padding: 8px; }
+  .ns-rows { display: flex; flex-direction: column; }
   .ns-row { display: flex; align-items: center; gap: 12px; padding: 4px 8px; border-radius: 4px; background: var(--white); }
   .ns-row:nth-child(even) { background: var(--n100); }
   .ns-row .ns-label { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; color: var(--n800); line-height: 1.4; }
@@ -969,19 +961,19 @@
   .metric-card { background: var(--white); border: 1px solid var(--n300); border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
   .metric-head { display: flex; align-items: center; gap: 10px; }
   .metric-name { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--n800); line-height: 1.4; }
-  .metric-tag { flex-shrink: 0; width: 20px; height: 20px; border-radius: 100px; border: 1px solid; display: flex; align-items: center; justify-content: center; }
-  .metric-tag.success { background: var(--success100); border-color: var(--brand); color: var(--brand); }
-  .metric-tag.warning { background: var(--warning100); border-color: var(--warning900); color: var(--warning900); }
+  .metric-info { flex-shrink: 0; display: flex; color: var(--n500); }
   .metric-value-row { display: flex; align-items: baseline; gap: 2px; }
   .metric-value { font-size: 16px; font-weight: 600; color: var(--n800); }
-  .metric-value.warning { color: var(--warning900); }
   .metric-sep { font-size: 12px; font-weight: 600; color: var(--n600); }
   .metric-target, .metric-unit { font-size: 12px; font-weight: 500; color: var(--n600); }
-  .metric-bar-wrap { position: relative; height: 8px; padding: 1px; background: var(--n300); border-radius: 8px; }
+  .metric-bar-wrap { display: flex; height: 8px; padding: 1px; background: var(--n300); border-radius: 8px; overflow: hidden; }
   .metric-bar-fill { height: 100%; border-radius: 100px; }
-  .metric-marker { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--n700); border-radius: 1px; }
-  .metric-desc { font-size: 12px; font-weight: 500; color: var(--n600); display: flex; align-items: center; gap: 4px; }
-  .metric-desc.warning { color: var(--warning900); }
+  /* at or over target the reached part flexes and the overshoot is a fixed stub */
+  .metric-bar-fill.grow { flex: 1; min-width: 0; border-radius: 100px 0 0 100px; }
+  .metric-bar-wrap > .metric-bar-fill:only-child { border-radius: 100px; }
+  .metric-bar-over { height: 100%; width: 24px; flex-shrink: 0; border-radius: 0 100px 100px 0; }
+  .metric-desc { font-size: 12px; font-weight: 500; color: var(--n600); display: flex; align-items: center; gap: 2px; }
+  .metric-desc svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--n500); }
   /* the day header becomes the way in — on hover the title takes the Action colour
      rather than the whole cell shading, as in the design */
   .day-header.clickable { cursor: pointer; }
